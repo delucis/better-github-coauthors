@@ -1,5 +1,11 @@
 # better-github-coauthors
 
+## 0.1.0
+
+### Minor Changes
+
+- [#6](https://github.com/delucis/better-github-coauthors/pull/6) [`a65bd8a`](https://github.com/delucis/better-github-coauthors/commit/a65bd8ad97488fe3c9917aa8df438fae4fa0236b) Thanks [@HiDeoo](https://github.com/HiDeoo)! - Adds support for GitHub public preview of the [improved merge experience](https://github.blog/changelog/2024-12-03-improved-pull-request-merge-experience-now-in-public-preview/).
+
 ## 0.0.4
 
 ### Patch Changes
