@@ -8,8 +8,9 @@ document.addEventListener('turbo:render', addCoAuthorsButtonToMergeForm);
 /**
  * Create the UI for adding co-authors.
  * @param {HTMLElement} root
+ * @param {Element | null} newMergeExperienceContainer
  */
-function createCoAuthorsUI(root) {
+function createCoAuthorsUI(root, newMergeExperienceContainer) {
 	const banner = document.createElement('div');
 	banner.setAttribute('aria-live', 'polite');
 	banner.classList.add('color-fg-subtle');
@@ -36,7 +37,8 @@ function createCoAuthorsUI(root) {
 		try {
 			const { message, count } = await getCoAuthors();
 			/** @type {HTMLTextAreaElement | null} */
-			const textArea = root.querySelector('textarea#merge_message_field');
+			const textArea = newMergeExperienceContainer?.querySelector('textarea') ??
+				root.querySelector('textarea#merge_message_field');
 			if (!textArea) {
 				throw new Error('Couldn’t find commit message <textarea>');
 			}
@@ -58,6 +60,7 @@ function createCoAuthorsUI(root) {
 	// Build container
 	const container = document.createElement('div');
 	container.classList.add('d-flex', 'flex-items-center', 'gap-2');
+	if (newMergeExperienceContainer) container.classList.add('mt-3');
 	container.append(button);
 	container.append(banner);
 	return container;
@@ -118,11 +121,13 @@ async function fetchGitHubAPI(endpoint) {
  * @param {HTMLElement} root Element to search within and add the co-authors button to.
  */
 function addCoAuthorsButton(root) {
-	const commitTitleInput = root.querySelector('input[name="commit_title"]');
+	const newMergeExperienceContainer = root.querySelector('react-partial[partial-name="mergebox-partial"]');
+	const commitTitleInput = newMergeExperienceContainer?.querySelector('div:has(> label):nth-child(1)') ??
+		root.querySelector('input[name="commit_title"]');
 	if (!commitTitleInput || root.querySelector('[data-coauthors-button]')) {
 		return;
 	}
-	const button = createCoAuthorsUI(root);
+	const button = createCoAuthorsUI(root, newMergeExperienceContainer);
 	button.setAttribute('data-coauthors-button', '');
 	commitTitleInput.insertAdjacentElement('afterend', button);
 }
