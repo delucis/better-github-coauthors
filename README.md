@@ -32,7 +32,7 @@ This is an open-source repository. You can
 
 ## Related
 
-- [coauthor.kevinzunigacuellar.com](https://coauthor.kevinzunigacuellar.com/) — web UI for getting co-authors for a PR
+- [coauthor.kevinzc.com](https://coauthor.kevinzc.com/) — web UI for getting co-authors for a PR
 - [kevinzunigacuellar/coauthor-action](https://github.com/kevinzunigacuellar/coauthor-action) — GitHub Action to get co-author messages as PR comments
 
 ## License
