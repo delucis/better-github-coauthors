@@ -1,4 +1,5 @@
 // @ts-check
+/// <reference path="../shared/settings.js" />
 
 // Run the script
 addCoAuthorsButtonToMergeForm();
@@ -35,13 +36,19 @@ function createCoAuthorsUI(root, isNewMergeExperience) {
 	button.addEventListener('click', async () => {
 		displayStatus('Loading co-authors…');
 		try {
-			const { message, count } = await getCoAuthors();
+			const settings = await getSettings();
+			const { message, count } = await getCoAuthors(settings);
 			/** @type {HTMLTextAreaElement | null} */
 			const textArea = root.querySelector(
 				isNewMergeExperience ? "textarea" : "textarea#merge_message_field",
 			);
 			if (!textArea) {
 				throw new Error('Couldn’t find commit message <textarea>');
+			}
+			// If enabled and we have co-authors to add, strip any existing co-authors from the textarea.
+			if (settings.stripExistingCoAuthors && count > 0) {
+				const coAuthorRegex = /^Co-authored-by:/i;
+				textArea.value = textArea.value.split('\n').filter((line) => !coAuthorRegex.test(line)).join('\n');
 			}
 			// Append co-authors to textarea content.
 			textArea.value = (textArea.value + '\n\n' + message).trim();
@@ -67,16 +74,19 @@ function createCoAuthorsUI(root, isNewMergeExperience) {
 	return container;
 }
 
-/** Get participants for the current PR and generate `Co-authored-by` messages for them. */
-async function getCoAuthors() {
+/**
+ * Get participants for the current PR and generate `Co-authored-by` messages for them.
+ * @param {Settings} settings
+ */
+async function getCoAuthors(settings) {
 	const [, owner, repo, _pull, id] = window.location.pathname.split('/');
 	const pullNumber = parseInt(id || '', 10);
 
 	const [prData, comments, reviewComments, reviews] = await Promise.all([
-		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}`),
-		fetchGitHubAPI(`/repos/${owner}/${repo}/issues/${pullNumber}/comments`),
-		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}/comments`),
-		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`),
+		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}`, settings),
+		fetchGitHubAPI(`/repos/${owner}/${repo}/issues/${pullNumber}/comments`, settings),
+		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}/comments`, settings),
+		fetchGitHubAPI(`/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`, settings),
 	]);
 
 	const participants = /** @type {Map<string, { name: string; email: string }>} */ (new Map());
@@ -87,8 +97,8 @@ async function getCoAuthors() {
 		if (user.type === 'Bot') continue;
 		// Skip PR author
 		if (user.login === prData.user.login) continue;
-		// Add commenters
-		if (!participants.has(user.login)) {
+		// Add commenters if not ignored
+		if (!participants.has(user.login) && !settings.ignoredCoAuthors.includes(user.login)) {
 			participants.set(user.login, {
 				name: user.name || user.login,
 				email: `${user.id}+${user.login}@users.noreply.github.com`,
@@ -106,11 +116,15 @@ async function getCoAuthors() {
  * Simple wrapper around `fetch()` for making GitHub API requests, e.g. `fetchGitHubAPI('/repos/withastro')`.
  * Throws an error if the fetch does not succeed.
  * @param {string} endpoint GitHub API endpoint to fetch
+ * @param {Settings} settings
  */
-async function fetchGitHubAPI(endpoint) {
-	const response = await fetch(`https://api.github.com${endpoint}`, {
-		headers: { Accept: 'application/vnd.github.v3+json' },
-	});
+async function fetchGitHubAPI(endpoint, settings) {
+	const headers = new Headers();
+	headers.append('Accept', 'application/vnd.github.v3+json');
+	if (settings.token) {
+		headers.append('Authorization', `Bearer ${settings.token}`);
+	}
+	const response = await fetch(`https://api.github.com${endpoint}`, { headers });
 	if (!response.ok) {
 		throw new Error(`GitHub API request failed: ${response.statusText}`);
 	}
