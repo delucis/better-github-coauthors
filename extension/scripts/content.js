@@ -8,9 +8,9 @@ document.addEventListener('turbo:render', addCoAuthorsButtonToMergeForm);
 /**
  * Create the UI for adding co-authors.
  * @param {HTMLElement} root
- * @param {Element | null} newMergeExperienceContainer
+ * @param {boolean} isNewMergeExperience
  */
-function createCoAuthorsUI(root, newMergeExperienceContainer) {
+function createCoAuthorsUI(root, isNewMergeExperience) {
 	const banner = document.createElement('div');
 	banner.setAttribute('aria-live', 'polite');
 	banner.classList.add('color-fg-subtle');
@@ -37,8 +37,9 @@ function createCoAuthorsUI(root, newMergeExperienceContainer) {
 		try {
 			const { message, count } = await getCoAuthors();
 			/** @type {HTMLTextAreaElement | null} */
-			const textArea = newMergeExperienceContainer?.querySelector('textarea') ??
-				root.querySelector('textarea#merge_message_field');
+			const textArea = root.querySelector(
+				isNewMergeExperience ? "textarea" : "textarea#merge_message_field",
+			);
 			if (!textArea) {
 				throw new Error('Couldn’t find commit message <textarea>');
 			}
@@ -60,7 +61,7 @@ function createCoAuthorsUI(root, newMergeExperienceContainer) {
 	// Build container
 	const container = document.createElement('div');
 	container.classList.add('d-flex', 'flex-items-center', 'gap-2');
-	if (newMergeExperienceContainer) container.classList.add('mt-3');
+	if (isNewMergeExperience) container.classList.add('mt-3');
 	container.append(button);
 	container.append(banner);
 	return container;
@@ -119,15 +120,18 @@ async function fetchGitHubAPI(endpoint) {
 /**
  * Create and add the co-authors button.
  * @param {HTMLElement} root Element to search within and add the co-authors button to.
+ * @param {boolean} isNewMergeExperience Whether or not the new merge experience is being used.
  */
-function addCoAuthorsButton(root) {
-	const newMergeExperienceContainer = root.querySelector('react-partial[partial-name="mergebox-partial"]');
-	const commitTitleInput = newMergeExperienceContainer?.querySelector('div:has(> label):nth-child(1)') ??
-		root.querySelector('input[name="commit_title"]');
+function addCoAuthorsButton(root, isNewMergeExperience) {
+	const commitTitleInput = root.querySelector(
+		isNewMergeExperience
+			? "div:has(> label):nth-child(1)"
+			: 'input[name="commit_title"]',
+	);
 	if (!commitTitleInput || root.querySelector('[data-coauthors-button]')) {
 		return;
 	}
-	const button = createCoAuthorsUI(root, newMergeExperienceContainer);
+	const button = createCoAuthorsUI(root, isNewMergeExperience);
 	button.setAttribute('data-coauthors-button', '');
 	commitTitleInput.insertAdjacentElement('afterend', button);
 }
@@ -136,14 +140,20 @@ function addCoAuthorsButton(root) {
  * Look for the PR merge form and add monitor it to add the co-authors button when possible.
  */
 function addCoAuthorsButtonToMergeForm() {
+	const newMergeExperienceContainer =
+		/** @type {HTMLDivElement | null} */ document.querySelector(
+			'.pull-discussion-timeline [data-testid="mergebox-partial"]',
+		);
 	const element = /** @type {HTMLDivElement | null} */ (
-		document.querySelector('.discussion-timeline-actions')
+		newMergeExperienceContainer ??
+			document.querySelector('.discussion-timeline-actions')
 	);
 	if (!element) return;
 
+	const isNewMergeExperience = !!newMergeExperienceContainer;
 	const observer = new MutationObserver(() => {
-		addCoAuthorsButton(element);
+		addCoAuthorsButton(element, isNewMergeExperience);
 	});
 	observer.observe(element, { subtree: true, childList: true });
-	addCoAuthorsButton(element);
+	addCoAuthorsButton(element, isNewMergeExperience);
 }
