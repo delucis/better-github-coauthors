@@ -1,5 +1,11 @@
 # better-github-coauthors
 
+## 0.1.1
+
+### Patch Changes
+
+- [#8](https://github.com/delucis/better-github-coauthors/pull/8) [`8718aa6`](https://github.com/delucis/better-github-coauthors/commit/8718aa6438591419366f916b8e6d86d611ec7822) Thanks [@HiDeoo](https://github.com/HiDeoo)! - Fixes support for GitHub [improved merge experience](https://github.blog/changelog/2024-12-03-improved-pull-request-merge-experience-now-in-public-preview/) due to changes in the DOM structure.
+
 ## 0.1.0
 
 ### Minor Changes
