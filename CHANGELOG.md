@@ -1,5 +1,11 @@
 # better-github-coauthors
 
+## 0.2.0
+
+### Minor Changes
+
+- [#10](https://github.com/delucis/better-github-coauthors/pull/10) [`3537a64`](https://github.com/delucis/better-github-coauthors/commit/3537a64e17f313f3304a0776bee237de3f2ac3e8) Thanks [@HiDeoo](https://github.com/HiDeoo)! - Adds support for GitHub public preview of the [new pull request overview page](https://github.blog/changelog/2026-11-05-new-pull-request-overview-page-in-public-preview/).
+
 ## 0.1.1
 
 ### Patch Changes
