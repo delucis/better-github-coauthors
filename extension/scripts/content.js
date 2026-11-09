@@ -2,15 +2,16 @@
 
 // Run the script
 addCoAuthorsButtonToMergeForm();
-// Re-run the script when navigating between pages
-document.addEventListener('turbo:render', addCoAuthorsButtonToMergeForm);
+// Re-run the script when the page changes, e.g. when navigating between pages or when a merge form is rendered
+const observer = new MutationObserver(addCoAuthorsButtonToMergeForm);
+observer.observe(document.documentElement, { subtree: true, childList: true });
 
 /**
  * Create the UI for adding co-authors.
  * @param {HTMLElement} root
- * @param {boolean} isNewMergeExperience
+ * @param {boolean} isNewMergeForm
  */
-function createCoAuthorsUI(root, isNewMergeExperience) {
+function createCoAuthorsUI(root, isNewMergeForm) {
 	const banner = document.createElement('div');
 	banner.setAttribute('aria-live', 'polite');
 	banner.classList.add('color-fg-subtle');
@@ -38,7 +39,7 @@ function createCoAuthorsUI(root, isNewMergeExperience) {
 			const { message, count } = await getCoAuthors();
 			/** @type {HTMLTextAreaElement | null} */
 			const textArea = root.querySelector(
-				isNewMergeExperience ? "textarea" : "textarea#merge_message_field",
+				isNewMergeForm ? "textarea" : "textarea#merge_message_field",
 			);
 			if (!textArea) {
 				throw new Error('Couldn’t find commit message <textarea>');
@@ -61,7 +62,7 @@ function createCoAuthorsUI(root, isNewMergeExperience) {
 	// Build container
 	const container = document.createElement('div');
 	container.classList.add('d-flex', 'flex-items-center', 'gap-2');
-	if (isNewMergeExperience) container.classList.add('mt-3');
+	if (isNewMergeForm) container.classList.add('mt-3');
 	container.append(button);
 	container.append(banner);
 	return container;
@@ -120,40 +121,38 @@ async function fetchGitHubAPI(endpoint) {
 /**
  * Create and add the co-authors button.
  * @param {HTMLElement} root Element to search within and add the co-authors button to.
- * @param {boolean} isNewMergeExperience Whether or not the new merge experience is being used.
+ * @param {boolean} isNewMergeForm Whether or not the merge form is the one from the improved merge
+ * experience (used in both the classic and new overview pages) instead of the legacy merge form.
  */
-function addCoAuthorsButton(root, isNewMergeExperience) {
+function addCoAuthorsButton(root, isNewMergeForm) {
 	const commitTitleInput = root.querySelector(
-		isNewMergeExperience
+		isNewMergeForm
 			? "div:has(> label):nth-child(1)"
 			: 'input[name="commit_title"]',
 	);
 	if (!commitTitleInput || root.querySelector('[data-coauthors-button]')) {
 		return;
 	}
-	const button = createCoAuthorsUI(root, isNewMergeExperience);
+	const button = createCoAuthorsUI(root, isNewMergeForm);
 	button.setAttribute('data-coauthors-button', '');
 	commitTitleInput.insertAdjacentElement('afterend', button);
 }
 
 /**
- * Look for the PR merge form and add monitor it to add the co-authors button when possible.
+ * Look for the PR merge forms and add the co-authors button to them when possible.
  */
 function addCoAuthorsButtonToMergeForm() {
-	const newMergeExperienceContainer =
-		/** @type {HTMLDivElement | null} */ document.querySelector(
-			'.pull-discussion-timeline [data-testid="mergebox-partial"]',
-		);
-	const element = /** @type {HTMLDivElement | null} */ (
-		newMergeExperienceContainer ??
-			document.querySelector('.discussion-timeline-actions')
+	const mergeForms = /** @type {NodeListOf<HTMLDivElement>} */ (
+		document.querySelectorAll(
+			':is([role="dialog"], [data-testid="mergebox-border-container"]):has([data-dd-action-name="pull_request.merge_box.confirm_merge"])',
+		)
 	);
-	if (!element) return;
+	// The improved merge experience form is used in the classic overview and in the merge dialog/side
+	// panel of the new overview page.
+	for (const form of mergeForms) addCoAuthorsButton(form, true);
 
-	const isNewMergeExperience = !!newMergeExperienceContainer;
-	const observer = new MutationObserver(() => {
-		addCoAuthorsButton(element, isNewMergeExperience);
-	});
-	observer.observe(element, { subtree: true, childList: true });
-	addCoAuthorsButton(element, isNewMergeExperience);
+	const legacyMergeForm = /** @type {HTMLDivElement | null} */ (
+		document.querySelector('.discussion-timeline-actions')
+	);
+	if (legacyMergeForm) addCoAuthorsButton(legacyMergeForm, false);
 }
