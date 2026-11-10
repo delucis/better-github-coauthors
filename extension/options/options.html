@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Options | Better GitHub Co-Authors</title>
+    <style>
+      :root {
+        --color-white: oklch(100% 0 0);
+        --color-gray-1: oklch(98.48% 0.0013 106.42);
+        --color-gray-2: oklch(92.32% 0.0026 48.72);
+        --color-gray-3: oklch(86.87% 0.0043 56.37);
+        --color-black: oklch(21.61% 0.0061 56.04);
+        --color-pink-5: oklch(65.59% 0.2118 354.31);
+        --color-pink-6: oklch(59.16% 0.218 0.58);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-white: oklch(21.61% 0.0061 56.04);
+          --color-gray-1: oklch(26.85% 0.0063 34.3);
+          --color-gray-2: oklch(37.41% 0.0087 67.56);
+          --color-gray-3: oklch(44.44% 0.0096 73.64);
+          --color-black: oklch(98.48% 0.0013 106.42);
+          --color-pink-5: oklch(72.53% 0.1752 349.76);
+          --color-pink-6: oklch(65.59% 0.2118 354.31);
+        }
+      }
+
+      body {
+        background-color: var(--color-gray-1);
+        color: var(--color-black);
+        font-family: sans-serif;
+        padding: 0.25rem;
+      }
+
+      a {
+        color: var(--color-pink-5);
+      }
+
+      a:hover {
+        text-decoration: none;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        font-size: 1rem;
+        gap: 0.875rem;
+        line-height: 1.5;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        gap: 0.25rem;
+      }
+
+      label:has(input[type="checkbox"]) {
+        align-items: center;
+        flex-direction: row;
+        gap: 0.25rem;
+      }
+
+      small {
+        font-size: 0.875rem;
+        font-weight: 400;
+      }
+
+      input {
+        accent-color: var(--color-pink-5);
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-3);
+        border-radius: 0.25rem;
+        color: var(--color-black);
+        font-size: 1rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        margin-block-start: 0.125rem;
+      }
+
+      input[type="checkbox"] {
+        margin: 0;
+      }
+
+      code {
+        background-color: var(--color-gray-2);
+        border-radius: 0.25rem;
+        font-size: 0.8125rem;
+        padding-inline: 0.125rem;
+      }
+
+      button {
+        background-color: var(--color-pink-5);
+        border: 0;
+        border-radius: 0.25rem;
+        color: var(--color-white);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-block-start: 0.5rem;
+        padding: 0.5rem;
+      }
+
+      button:hover {
+        background-color: var(--color-pink-6);
+      }
+    </style>
+  </head>
+  <body>
+    <form>
+      <label for="stripExistingCoAuthors">
+        <input
+          id="stripExistingCoAuthors"
+          name="stripExistingCoAuthors"
+          type="checkbox"
+        />
+        Strip existing co-authors
+      </label>
+      <label for="ignoredCoAuthors">
+        Ignored co-authors
+        <small>Comma-separated list of GitHub usernames.</small>
+        <input id="ignoredCoAuthors" name="ignoredCoAuthors" type="text" />
+      </label>
+      <label for="token">
+        GitHub token
+        <small>
+          A
+          <a
+            href="https://github.com/settings/tokens/new?description=Better%20GitHub%20Co-Authors&scopes=repo"
+            target="_blank"
+            >personal access token</a
+          >
+          with the <code>repo</code> scope to access private repos.
+        </small>
+        <input id="token" name="token" type="password" />
+      </label>
+      <button type="submit">Save</button>
+    </form>
+    <script src="../shared/settings.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>
