@@ -144,7 +144,7 @@ function addCoAuthorsButton(root, isNewMergeForm) {
 function addCoAuthorsButtonToMergeForm() {
 	const mergeForms = /** @type {NodeListOf<HTMLDivElement>} */ (
 		document.querySelectorAll(
-			':is([role="dialog"], [data-testid="mergebox-border-container"]):has([data-dd-action-name$=".confirm_merge"])',
+			'[data-testid="mergebox-border-container"]:has(textarea), [role="dialog"]:has([data-telemetry-action$=".confirm_merge"], [class*="ConfirmMergeContainer__"])',
 		)
 	);
 	// The improved merge experience form is used in the classic overview and in the merge dialog/side
