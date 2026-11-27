@@ -11,6 +11,8 @@ jobs:
   version:
     name: Version
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -29,10 +31,17 @@ jobs:
       - name: Install Dependencies
         run: pnpm i
 
-      - name: Create Release Pull Request
+      - name: Create Release Pull Request or Tag Release
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: npx changeset publish
+          publish: pnpm changeset tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish
+    needs: version
+    if: needs.version.outputs.published == 'true'
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
