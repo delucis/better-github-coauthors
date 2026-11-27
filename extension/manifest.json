@@ -10,14 +10,19 @@
 		"48": "images/icon-48.png",
 		"128": "images/icon-128.png"
 	},
+	"permissions": ["storage"],
 	"host_permissions": ["https://api.github.com/*"],
 	"content_scripts": [
 		{
-			"js": ["scripts/content.js"],
+			"js": ["scripts/content.js", "shared/settings.js"],
 			"matches": ["https://github.com/*"],
 			"exclude_matches": ["https://*/login/*"]
 		}
 	],
+	"options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "{9a0ad28e-1832-44a4-8337-826ecf5663af}"
